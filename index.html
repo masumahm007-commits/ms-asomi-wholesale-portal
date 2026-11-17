@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MS Asomi Food Industry | Wholesale Portal</title>
+<style>
+:root{--green:#176b45;--dark:#143b2b;--cream:#fffaf0;--line:#e6e8e2;--muted:#647067}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7f3;color:#17251d}
+header{background:var(--dark);color:white;padding:18px max(18px,calc((100% - 1100px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:20px;font-weight:800}.brand small{display:block;font-size:12px;font-weight:500;color:#d2e5d8}
+nav{display:flex;gap:8px;flex-wrap:wrap}button,.btn{border:0;border-radius:9px;padding:10px 14px;background:var(--green);color:white;font-weight:650;cursor:pointer;text-decoration:none}
+button.secondary{background:#e9f1eb;color:var(--dark)}button.danger{background:#a33b35}button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1100px;margin:24px auto;padding:0 16px}.hero{background:linear-gradient(120deg,#e5f2e8,#fffaf0);border:1px solid #dce9de;border-radius:18px;padding:28px;margin-bottom:18px}
+.hero h1{font-size:clamp(27px,5vw,42px);line-height:1.1;margin:0 0 10px;color:var(--dark)}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 3px 12px #183d2510}.card h3{margin:4px 0}.price{font-size:19px;font-weight:800;color:var(--green)}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccd5ce;border-radius:8px;margin:5px 0 12px;font:inherit;background:white}
+label{font-weight:650;font-size:13px}form{max-width:480px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+section{margin:20px 0}.hidden{display:none!important}.notice{padding:12px;border-radius:9px;background:#fff4d9;color:#684c11;margin:12px 0}.success{background:#e4f4e8;color:#205b35}.error{background:#fde9e7;color:#8a2923}
+table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:14px}th{background:#edf3ee}
+footer{text-align:center;color:var(--muted);padding:30px 12px;font-size:13px}
+.pill{display:inline-block;padding:3px 8px;border-radius:20px;background:#e7f2e9;color:#205b35;font-size:12px}
+#message{position:sticky;top:0;z-index:3}
+@media(max-width:600px){header{align-items:flex-start}.brand{font-size:18px}nav{width:100%}nav button{flex:1}th,td{padding:7px;font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">MS ASOMI FOOD INDUSTRY<small>Wholesale Partner Portal</small></div>
+ <nav>
+  <button class="secondary" onclick="show('shop')">Products</button>
+  <button class="secondary" onclick="show('orders')">My Orders</button>
+  <button class="secondary" onclick="show('account')">Account</button>
+  <button id="adminNav" class="secondary hidden" onclick="show('admin')">Admin</button>
+  <button id="authNav" onclick="show('login')">Login</button>
+  <button id="logoutNav" class="hidden" onclick="logout()">Logout</button>
+ </nav>
+</header>
+<main>
+<div id="message"></div>
+<div class="hero">
+ <span class="pill">Wholesale ordering</span>
+ <h1>Assamese products, delivered to your business.</h1>
+ <p class="muted">Register as a wholesale partner, browse products and submit orders to MS Asomi Food Industry.</p>
+ <button onclick="show('shop')">Explore products</button>
+</div>
+<section id="shop">
+ <div class="row"><div><h2>Wholesale Products</h2><p class="muted">Prices and availability are confirmed by our team.</p></div><button class="secondary" onclick="loadProducts()">Refresh products</button></div>
+ <div id="products" class="grid"><p>Loading products...</p></div>
+</section>
+<section id="login" class="hidden card">
+ <h2>Partner Login</h2>
+ <form id="loginForm"><label>Email</label><input name="email" type="email" required><label>Password</label><input name="password" type="password" required minlength="8"><button>Login</button></form>
+ <p>New wholesaler? <a href="#" onclick="show('register')">Create account</a></p>
+</section>
+<section id="register" class="hidden card">
+ <h2>Wholesaler Registration</h2>
+ <form id="registerForm">
+ <label>Business / Shop name</label><input name="business_name" required>
+ <label>Contact person</label><input name="contact_name" required>
+ <label>Phone / WhatsApp</label><input name="phone" required>
+ <label>City / District</label><input name="city" required>
+ <label>Email</label><input name="email" type="email" required>
+ <label>Password (minimum 8 characters)</label><input name="password" type="password" minlength="8" required>
+ <button>Create partner account</button></form>
+</section>
+<section id="account" class="hidden card"><h2>My Account</h2><div id="accountInfo">Login to view your account.</div></section>
+<section id="orders" class="hidden"><h2>My Orders</h2><div id="myOrders">Login to view orders.</div></section>
+<section id="admin" class="hidden"><h2>Admin Dashboard</h2><p class="muted">Only approved admin accounts can access this section.</p>
+ <div class="row"><button onclick="loadAdmin()">Refresh dashboard</button><button class="secondary" onclick="show('adminProducts')">Manage products</button></div>
+ <div id="adminOrders"></div>
+</section>
+<section id="adminProducts" class="hidden card"><h2>Add a product</h2>
+ <form id="productForm"><label>Product name</label><input name="name" required><label>Description</label><textarea name="description"></textarea>
+ <label>Wholesale price (INR)</label><input name="price" type="number" min="0.01" step="0.01" required>
+ <label>Unit (e.g. packet, kg, box)</label><input name="unit" required><label>Image URL (optional)</label><input name="image_url" type="url">
+ <label>Stock quantity</label><input name="stock" type="number" min="0" value="0"><button>Add product</button></form>
+ <div id="adminProductList"></div></section>
+</main>
+<footer>© <span id="year"></span> MS Asomi Food Industry. Wholesale portal.</footer>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// STEP 1: Project URL is already added. Paste your Supabase publishable key below.
+const SUPABASE_URL = 'https://vspztwgfpcgzxclnumgy.supabase.co';
+const SUPABASE_ANON_KEY = 'PASTE_SUPABASE_ANON_PUBLIC_KEY_HERE';
+const configured = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PASTE_') && !SUPABASE_ANON_KEY.includes('PASTE_');
+const db = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let currentUser = null, profile = null, productsCache = [];
+
+const $ = id => document.getElementById(id);
+const money = n => '₹' + Number(n).toFixed(2);
+function msg(t, type='notice'){ $('message').innerHTML = `<div class="notice ${type}">${escapeHtml(t)}</div>`; window.scrollTo({top:0,behavior:'smooth'}); }
+function escapeHtml(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+window.show = id => { document.querySelectorAll('main section').forEach(x=>x.classList.add('hidden')); $(id)?.classList.remove('hidden'); if(id==='orders')loadOrders(); if(id==='account')renderAccount(); if(id==='admin')loadAdmin(); if(id==='adminProducts')loadAdminProducts(); };
+function requireConfig(){if(!db){msg('Website database abhi connect nahi hua. README ke setup steps follow karke Supabase keys add karein.','error');return false;}return true;}
+async function refreshSession(){
+ if(!db)return;
+ const {data:{session}}=await db.auth.getSession(); currentUser=session?.user||null;
+ if(currentUser){const {data}=await db.from('profiles').select('*').eq('id',currentUser.id).maybeSingle();profile=data;}
+ updateNav();
+}
+function updateNav(){ $('authNav').classList.toggle('hidden',!!currentUser);$('logoutNav').classList.toggle('hidden',!currentUser);$('adminNav').classList.toggle('hidden',profile?.role!=='admin'); }
+window.logout=async()=>{if(db)await db.auth.signOut();currentUser=null;profile=null;updateNav();msg('You have logged out.','success');show('shop');};
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();if(!requireConfig())return;const f=new FormData(e.target);const {error}=await db.auth.signInWithPassword({email:f.get('email'),password:f.get('password')});if(error)return msg(error.message,'error');await refreshSession();msg('Login successful.','success');show('shop');});
+$('registerForm').addEventListener('submit',async e=>{e.preventDefault();if(!requireConfig())return;const f=new FormData(e.target);const {data,error}=await db.auth.signUp({email:f.get('email'),password:f.get('password'),options:{data:{business_name:f.get('business_name'),contact_name:f.get('contact_name'),phone:f.get('phone'),city:f.get('city')}}});if(error)return msg(error.message,'error');msg('Registration submitted. Verify your email if email confirmation is enabled, then log in.','success');e.target.reset();show('login');});
+window.loadProducts=async()=>{
+ if(!requireConfig()){$('products').innerHTML='<p class="muted">Connect Supabase to load live products.</p>';return;}
+ const {data,error}=await db.from('products').select('*').eq('active',true).order('created_at',{ascending:false});
+ if(error){$('products').textContent=error.message;return;}productsCache=data||[];
+ $('products').innerHTML=productsCache.length?productsCache.map(p=>`<article class="card">${p.image_url?`<img src="${escapeHtml(p.image_url)}" alt="" style="width:100%;height:145px;object-fit:cover;border-radius:9px">`:''}<h3>${escapeHtml(p.name)}</h3><p class="muted">${escapeHtml(p.description||'')}</p><div class="price">${money(p.price)} / ${escapeHtml(p.unit)}</div><p class="muted">Available stock: ${p.stock}</p><label>Quantity</label><input id="qty-${p.id}" type="number" min="1" max="${p.stock}" value="1"><button ${p.stock<1?'disabled':''} onclick="placeOrder('${p.id}')">Order this product</button></article>`).join(''):'<p>No products listed yet. Admin can add products after setup.</p>';
+};
+window.placeOrder=async id=>{
+ if(!currentUser){msg('Order karne ke liye pehle login karein.');show('login');return;}
+ const p=productsCache.find(x=>x.id===id),qty=Number($('qty-'+id).value);
+ if(!p||!Number.isInteger(qty)||qty<1||qty>p.stock)return msg('Please enter a valid quantity.','error');
+ const {data,error}=await db.rpc('place_wholesale_order',{p_product_id:id,p_quantity:qty});
+ if(error)return msg(error.message,'error');msg('Order submitted. Our team will confirm it.','success');show('orders');
+};
+window.loadOrders=async()=>{
+ if(!currentUser){$('myOrders').innerHTML='<p>Please login first.</p>';return;}
+ const {data,error}=await db.from('orders').select('id,status,total_amount,created_at,order_items(product_name,quantity,unit_price)').order('created_at',{ascending:false});
+ if(error){$('myOrders').textContent=error.message;return;}
+ $('myOrders').innerHTML=data?.length?`<table><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr>${data.map(o=>`<tr><td>${o.id.slice(0,8)}</td><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.order_items.map(i=>`${escapeHtml(i.product_name)} × ${i.quantity}`).join('<br>')}</td><td>${money(o.total_amount)}</td><td>${escapeHtml(o.status)}</td></tr>`).join('')}</table>`:'<p>No orders yet.</p>';
+};
+function renderAccount(){ $('accountInfo').innerHTML=currentUser?`<p><b>Email:</b> ${escapeHtml(currentUser.email)}</p><p><b>Business:</b> ${escapeHtml(profile?.business_name||'Not set')}</p><p><b>Account status:</b> ${escapeHtml(profile?.status||'pending')}</p><p><b>Reward points:</b> ${profile?.reward_points||0}</p>`:'<p>Please login first.</p>'; }
+window.loadAdmin=async()=>{
+ if(profile?.role!=='admin'){msg('Admin permission required.','error');return;}
+ const {data,error}=await db.from('orders').select('id,status,total_amount,created_at,profiles(business_name,contact_name,phone),order_items(product_name,quantity)').order('created_at',{ascending:false});
+ if(error){$('adminOrders').textContent=error.message;return;}
+ $('adminOrders').innerHTML=data?.length?`<table><tr><th>Order / Partner</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th></tr>${data.map(o=>`<tr><td>${o.id.slice(0,8)}<br>${escapeHtml(o.profiles?.business_name||'')}<br>${escapeHtml(o.profiles?.phone||'')}</td><td>${o.order_items.map(i=>`${escapeHtml(i.product_name)} × ${i.quantity}`).join('<br>')}</td><td>${money(o.total_amount)}</td><td>${escapeHtml(o.status)}</td><td><select id="status-${o.id}"><option>pending</option><option>approved</option><option>rejected</option><option>paid</option><option>completed</option></select><button onclick="setOrderStatus('${o.id}')">Save</button></td></tr>`).join('')}</table>`:'<p>No orders.</p>';
+};
+window.setOrderStatus=async id=>{const status=$('status-'+id).value;const {error}=await db.from('orders').update({status}).eq('id',id);if(error)return msg(error.message,'error');msg('Order status updated.','success');loadAdmin();};
+$('productForm').addEventListener('submit',async e=>{e.preventDefault();if(profile?.role!=='admin')return msg('Admin permission required.','error');const f=new FormData(e.target);const item={name:f.get('name'),description:f.get('description'),price:Number(f.get('price')),unit:f.get('unit'),image_url:f.get('image_url')||null,stock:Number(f.get('stock'))};const {error}=await db.from('products').insert(item);if(error)return msg(error.message,'error');msg('Product added.','success');e.target.reset();loadAdminProducts();loadProducts();});
+async function loadAdminProducts(){if(profile?.role!=='admin')return;const {data,error}=await db.from('products').select('*').order('created_at',{ascending:false});if(error)return; $('adminProductList').innerHTML=`<h3>Current products</h3><table><tr><th>Name</th><th>Price</th><th>Stock</th><th>Active</th></tr>${data.map(p=>`<tr><td>${escapeHtml(p.name)}</td><td>${money(p.price)}</td><td>${p.stock}</td><td>${p.active?'Yes':'No'}</td></tr>`).join('')}</table>`;}
+$('year').textContent=new Date().getFullYear();
+if(db){db.auth.onAuthStateChange(()=>setTimeout(refreshSession,0));await refreshSession();await loadProducts();}
+else {$('products').innerHTML='<div class="notice">Setup required: add your Supabase URL and public anon key in index.html after completing README.</div>';}
+</script>
+</body></html>
